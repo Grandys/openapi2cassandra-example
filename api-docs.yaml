@@ -1,0 +1,188 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /tasks:
+    get:
+      tags:
+      - task-controller
+      summary: Query tasks for user
+      operationId: taskList
+      parameters:
+      - name: assignee
+        in: query
+        description: Id of the assigned user
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: name
+        in: query
+        description: Optional task name
+        required: false
+        schema:
+          type: string
+      - name: process_definition_name
+        in: query
+        description: Optional process definition name
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+  /started-process-instances:
+    get:
+      tags:
+      - process-instance-controller
+      summary: Query process instances by initiator and optionally by status
+      operationId: queryProcessInstanceByInitiatorAndStatus
+      parameters:
+      - name: initiator_id
+        in: query
+        description: Id of user initiated process
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: status
+        in: query
+        description: Status of the process
+        required: false
+        schema:
+          type: string
+          enum:
+          - COMPLETED
+          - PENDING
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProcessInstance'
+  /process-instances:
+    get:
+      tags:
+      - process-instance-controller
+      summary: Query process instances by process definition name
+      operationId: queryProcessInstanceByName
+      parameters:
+      - name: name
+        in: query
+        description: Name of the process definition
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProcessInstance'
+  /comments:
+    get:
+      tags:
+      - comment-controller
+      summary: Query comments for process instance
+      operationId: queryCommentsByProcessInstanceId
+      parameters:
+      - name: process_instance_id
+        in: query
+        description: Id of the process instance
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: author_id
+        in: query
+        description: Optional author id
+        required: false
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+components:
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        assignedAt:
+          type: string
+          format: date-time
+        completed:
+          type: boolean
+        completedAt:
+          type: string
+          format: date-time
+        processInstanceId:
+          type: string
+          format: uuid
+        processDefinitionName:
+          type: string
+    ProcessInstance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        completed:
+          type: boolean
+        name:
+          type: string
+        initiator:
+          $ref: '#/components/schemas/User'
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        displayName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        text:
+          type: string
+        addedAt:
+          type: string
+          format: date-time
+        authorDisplayName:
+          type: string
